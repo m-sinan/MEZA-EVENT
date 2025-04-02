@@ -21,7 +21,7 @@ export const createStaff = async (req, res) => {
   const staffs = req.body;
 
   if (!staffs.name || !staffs.staff_Id || !staffs.location || !staffs.phone_Number) {
-    return res.status(400).json({ success: false, message: "Please provide all fields" });
+    return res.status(400).json({ success: false, message: "Please provide al fields" });
   }
 
 //   if (req.file) {
@@ -62,7 +62,7 @@ export const deleteStaff = async (req, res) => {
       return res.status(404).json({ success: false, message: "Staff not found" });
     }
 
-    // // Delete the profile image if it exists
+    // Delete the profile image if it exists
     // if (staff.profileImage) {
     //   const imagePath = `./frontend/public/uploads/${staff.profileImage}`; // Adjust the path as needed
     //   if (fs.existsSync(imagePath)) {
@@ -93,15 +93,15 @@ export const updateStaff = async (req, res) => {
     }
 
     // If a new file is uploaded, delete the old image and update with the new one
-    if (req.file) {
-      if (existingStaff.profileImage) {
-        const oldImagePath = `./frontend/public/uploads/${existingStaff.profileImage}`; // Adjust the path as needed
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath); // Delete the old image file
-        }
-      }
-      staff.profileImage = req.file.filename; // Update with the new image filename
-    }
+    // if (req.file) {
+    //   if (existingStaff.profileImage) {
+    //     const oldImagePath = `./frontend/public/uploads/${existingStaff.profileImage}`; // Adjust the path as needed
+    //     if (fs.existsSync(oldImagePath)) {
+    //       fs.unlinkSync(oldImagePath); // Delete the old image file
+    //     }
+    //   }
+    //   staff.profileImage = req.file.filename; // Update with the new image filename
+    // }
 
     const updatedStaff = await Staffs.findByIdAndUpdate(id, staff, { new: true });
     res.status(200).json({ success: true, data: updatedStaff });
