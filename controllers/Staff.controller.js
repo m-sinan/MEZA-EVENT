@@ -24,9 +24,9 @@ export const createStaff = async (req, res) => {
     return res.status(400).json({ success: false, message: "Please provide all fields" });
   }
 
-  if (req.file) {
-    staffs.profileImage = `${req.file.filename}`; // Save the relative path
-}
+//   if (req.file) {
+//     staffs.profileImage = `${req.file.filename}`; // Save the relative path
+// }
   try {
     const existingStaff = await Staffs.findOne({ staff_Id: staffs.staff_Id });
     if (existingStaff) {
@@ -62,13 +62,13 @@ export const deleteStaff = async (req, res) => {
       return res.status(404).json({ success: false, message: "Staff not found" });
     }
 
-    // Delete the profile image if it exists
-    if (staff.profileImage) {
-      const imagePath = `./frontend/public/uploads/${staff.profileImage}`; // Adjust the path as needed
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath); // Delete the image file
-      }
-    }
+    // // Delete the profile image if it exists
+    // if (staff.profileImage) {
+    //   const imagePath = `./frontend/public/uploads/${staff.profileImage}`; // Adjust the path as needed
+    //   if (fs.existsSync(imagePath)) {
+    //     fs.unlinkSync(imagePath); // Delete the image file
+    //   }
+    // }
 
     await Staffs.findByIdAndDelete(id);
     res.status(200).json({ success: true, message: "Staff deleted" });
