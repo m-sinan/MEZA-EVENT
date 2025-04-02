@@ -18,9 +18,7 @@ const staffsscheema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    profileImage: {
-        type: String,
-    },
+
 },
 {
     timestamps: true //createdAt, updatedAt
