@@ -20,9 +20,7 @@ export const getStaffs = async (req, res) => {
 export const createStaff = async (req, res) => {
   const staffs = req.body;
 
-  if (!staffs.name || !staffs.staff_Id || !staffs.location || !staffs.phone_Number) {
-    return res.status(400).json({ success: false, message: "Please provide all fields" });
-  }
+
 
 //   if (req.file) {
 //     staffs.profileImage = `${req.file.filename}`; // Save the relative path
