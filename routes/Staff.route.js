@@ -1,6 +1,5 @@
 import express from "express";
-import { createStaff, deleteStaff, getStaffs, updateStaff } from "../controllers/Staff.controller.js";
-import upload from "../middleware/upload.js";
+import { createStaff, deleteStaff, getStaffs, updateStaff, upload } from "../controllers/Staff.controller.js";
 
 const router = express.Router();
 

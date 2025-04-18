@@ -1,117 +1,118 @@
-import fs from 'fs';
-import mongoose from 'mongoose';
-import Staffs from '../models/staff_profile.js';
+import mongoose from "mongoose";
+import Staffs from "../models/staff_profile.js";
+import multer from "multer";
 
-
-
-
-
-//get all staffs
+// Middleware to get all staffs
 export const getStaffs = async (req, res) => {
-    try {
-      const staffs = await Staffs.find();
-      res.status(200).json({ success: true, data: staffs });
-    } catch (error) {
-      console.error("Error in get staffs:", error.message);
-      res.status(500).json({ success: false, message: "server Error" });
-    }
-  };
-
-export const createStaff = async (req, res) => {
-  const staffs = req.body;
-
-  if (!staffs.name || !staffs.staff_Id || !staffs.location || !staffs.phone_Number) {
-    return res.status(400).json({ success: false, message: "Please provide al fields" });
-  }
-
-//   if (req.file) {
-//     staffs.profileImage = `${req.file.filename}`; // Save the relative path
-// }
   try {
-    const existingStaff = await Staffs.findOne({ staff_Id: staffs.staff_Id });
-    if (existingStaff) {
-      if (req.file) {
-        fs.unlinkSync(req.file.path); // Delete the uploaded file if staff already exists
+    const staffs = await Staffs.find();
+    const convertedImages = staffs.map((staff) => {
+      let profileImage = null;
+      if (staff.profileImage && staff.profileImage.data) {
+        profileImage = {
+          contentType: staff.profileImage.contentType,
+          data: staff.profileImage.data.toString("base64"),
+        };
       }
-      return res.status(400).json({ success: false, message: "Staff ID already exists" });
-    }
-
-    const newStaff = new Staffs(staffs);
-    await newStaff.save();
-
-    res.status(201).json({ success: true, data: newStaff });
+      return {
+        ...staff._doc,
+        profileImage,
+      };
+    });
+    res.status(200).json({ success: true, data: convertedImages });
   } catch (error) {
-    if (req.file) {
-      fs.unlinkSync(req.file.path); // Delete the uploaded file if an error occurs
-    }
-    console.error("Error in create staff:", error.message);
+    console.error("Error in get staffs:", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
+// Middleware to handle file uploads
+const storage = multer.memoryStorage();
+export const upload = multer({ storage: storage });
+
+// Middleware to create a new staff member
+export const createStaff = async (req, res) => {
+  const { name, staff_Id, location, phone_Number } = req.body;
+  try {
+    if (!req.file) {
+      return res.status(400).send("No file uploaded");
+    }
+    const existingStaff = await Staffs.findOne({ staff_Id });
+    if (existingStaff) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Staff ID already exists" });
+    }
+    const newStaff = new Staffs({
+      name,
+      staff_Id,
+      location,
+      phone_Number,
+      profileImage: {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
+      },
+    });
+    await newStaff.save();
+    res.status(201).send(newStaff);
+  } catch (error) {
+    console.error("Error in creating staff:", error.message);
+    res.status(500).send(error.message);
+  }
+};
+
+// Middleware to delete a staff member by ID
 export const deleteStaff = async (req, res) => {
   const { id } = req.params;
-
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ success: false, message: "Invalid staff id" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid staff id" });
   }
-
   try {
     const staff = await Staffs.findById(id);
     if (!staff) {
-      return res.status(404).json({ success: false, message: "Staff not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Staff not found" });
     }
-
-    // Delete the profile image if it exists
-    // if (staff.profileImage) {
-    //   const imagePath = `./frontend/public/uploads/${staff.profileImage}`; // Adjust the path as needed
-    //   if (fs.existsSync(imagePath)) {
-    //     fs.unlinkSync(imagePath); // Delete the image file
-    //   }
-    // }
-
     await Staffs.findByIdAndDelete(id);
     res.status(200).json({ success: true, message: "Staff deleted" });
   } catch (error) {
-    console.log("Error in deleting staff:", error.message);
+    console.error("Error in deleting staff:", error.message);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
+// Middleware to update a staff member by ID
 export const updateStaff = async (req, res) => {
   const { id } = req.params;
-  const staff = req.body;
-
+  const { name, staff_Id, location, phone_Number } = req.body;
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ success: false, message: "Invalid staff id" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid staff id" });
   }
-
   try {
     const existingStaff = await Staffs.findById(id);
     if (!existingStaff) {
-      return res.status(404).json({ success: false, message: "Staff not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Staff not found" });
     }
-
-    // If a new file is uploaded, delete the old image and update with the new one
-    // if (req.file) {
-    //   if (existingStaff.profileImage) {
-    //     const oldImagePath = `./frontend/public/uploads/${existingStaff.profileImage}`; // Adjust the path as needed
-    //     if (fs.existsSync(oldImagePath)) {
-    //       fs.unlinkSync(oldImagePath); // Delete the old image file
-    //     }
-    //   }
-    //   staff.profileImage = req.file.filename; // Update with the new image filename
-    // }
-
-    const updatedStaff = await Staffs.findByIdAndUpdate(id, staff, { new: true });
+    const updatedStaff = await Staffs.findByIdAndUpdate(
+      id,
+      {
+        name,
+        staff_Id,
+        location,
+        phone_Number,
+        profileImage: { data: req.file.buffer, contentType: req.file.mimetype },
+      },
+      { new: true }
+    );
     res.status(200).json({ success: true, data: updatedStaff });
   } catch (error) {
-    if (req.file) {
-      const newImagePath = `../frontend/public/uploads/${req.file.filename}`; // Adjust the path as needed
-      if (fs.existsSync(newImagePath)) {
-        fs.unlinkSync(newImagePath); // Delete the uploaded file if an error occurs
-      }
-    }
     console.error("Error in updating staff:", error.message);
     res.status(500).json({ success: false, message: "Server error" });
   }

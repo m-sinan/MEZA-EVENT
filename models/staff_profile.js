@@ -19,7 +19,8 @@ const staffsscheema = new mongoose.Schema({
         required: true
     },
     profileImage: {
-        type: String,
+        data: Buffer,
+        contentType: String,
     },
 },
 {
