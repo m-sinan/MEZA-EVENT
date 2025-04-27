@@ -1,5 +1,5 @@
 import express from "express";
-import { createStaff, deleteStaff, getStaffs, updateStaff, upload } from "../controllers/Staff.controller.js";
+import { createStaff, deleteStaff, getStaffs, shareStaffDetails, updateStaff, upload } from "../controllers/Staff.controller.js";
 
 const router = express.Router();
 
@@ -18,6 +18,9 @@ router.put("/:id", upload.single('profileImage'), updateStaff);
 //get all staffs
 
 router.get("/", getStaffs);
+
+// Route to share staff profile details
+router.get("/share/:id", shareStaffDetails);
 
 
 export default router;

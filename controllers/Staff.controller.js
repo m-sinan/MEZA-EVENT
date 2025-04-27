@@ -117,3 +117,32 @@ export const updateStaff = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+// Middleware to share staff profile details without image
+export const shareStaffDetails = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid staff id" });
+  }
+  try {
+    const staff = await Staffs.findById(id);
+    if (!staff) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Staff not found" });
+    }
+    // Create a shared profile object without the image
+    const sharedProfile = {
+      name: staff.name,
+      staff_Id: staff.staff_Id,
+      location: staff.location,
+      phone_Number: staff.phone_Number,
+    };
+    res.status(200).json({ success: true, data: sharedProfile });
+  } catch (error) {
+    console.error("Error in sharing staff details:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
